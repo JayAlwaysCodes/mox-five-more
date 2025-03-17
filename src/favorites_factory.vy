@@ -1,11 +1,12 @@
 # pragma version 0.4.0
 #@license MIT
 
+from interfaces import i_favorites 
+
 list_of_favorite_contracts: public(DynArray[address, 100])
 original_favorite_contract: address
 
-interface i_favorites:
-    def store(new_number: uint256): nonpayable
+
 
 @deploy
 def __init__(original_favorite_contract: address):
@@ -18,7 +19,9 @@ def create_favorites_contract():
 
 @external
 def store_from_factory(favorites_index: uint256, new_number: uint256):
-    pass
+    favorites_address: address = self.list_of_favorite_contracts[favorites_index]
+    favorites_contract: i_favorites = i_favorites(favorites_address)
+    extcall favorites_contract.store(new_number)
 
 
     
