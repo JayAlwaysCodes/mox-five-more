@@ -1,12 +1,20 @@
-from src import Counter
+from src import favorites, favorites_factory
 from moccasin.boa_tools import VyperContract
 
-def deploy() -> VyperContract:
-    counter: VyperContract = Counter.deploy()
-    print("Starting count: ", counter.number())
-    counter.increment()
-    print("Ending count: ", counter.number())
-    return counter
+def deploy_favorites() -> VyperContract:
+    favorites_contract = favorites.deploy()
+    return favorites_contract
+
+def deploy_factory(favorites_contract: VyperContract):
+    factory_contract: VyperContract = favorites_factory.deploy(favorites_contract.address)
+    factory_contract.create_favorites_contract()
+
+    new_favorites_address: str = factory_contract.list_of_favorite_contracts(0)
+    new_favorites_contract: VyperContract = favorites.at(new_favorites_address)
+    new_favorites_contract.store(50)
+    print(f"Stored Value is: {new_favorites_contract.retrieve()}")
 
 def moccasin_main() -> VyperContract:
-    return deploy()
+    favorites_contract = deploy_favorites()
+    deploy_factory(favorites_contract)
+    return deploy_favorites()
